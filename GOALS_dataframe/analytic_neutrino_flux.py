@@ -44,24 +44,6 @@ def Qp(p,R,h,plow,pup,alpha,pmax,RSN):
     return (N/V_SBN)*pow(p/mp,-alpha)*np.exp(-p/pmax)
 
 
-def Qp(p,R,h,plow,pup,alpha,pmax,RSN):
-    mp = 0.938
-    R_pc = R*u.parsec  #pc to cm conversion
-    R_cm = (R_pc.to(u.cm)).value
-    h_pc = h*u.pc
-    h_cm = (h_pc.to(u.cm)).value
-    if h == 0: 
-        V_spherical = (4/3)*np.pi*pow(R_cm,3)
-        V_SBN = V_spherical
-    else:
-        V_disk = 2*h_cm*np.pi*pow(R_cm,2)
-        V_SBN = V_disk
-    mom = np.logspace(np.log10(plow),np.log10(pup),100000)
-    Int = np.trapz(I(mom,alpha,pmax),mom)
-    N = E_CR(RSN)/Int
-    return (N/V_SBN)*pow(p/mp,-alpha)*np.exp(-p/pmax)
-
-
 ####
 ## Timescale
 ####
