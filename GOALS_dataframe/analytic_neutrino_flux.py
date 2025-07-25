@@ -1,193 +1,193 @@
+# ==== IMPORTS ====
 import matplotlib.pyplot as plt
 import numpy as np 
 from astropy import units as u 
 from astropy import constants as const
 from scipy.integrate import quad
 
-####
-## Injection
-####
+# ===============================
+#         INJECTION SECTION
+# ===============================
 
+# Inelastic cross-section for proton-proton collisions (in mb)
 def cross_section(E):
-    L = np.log(E/1e3)
-    E_th = 1.22
-    return (34.3+1.88*L+0.25*pow(L,2))*pow((1-pow((E_th/E),4)),2)
+    L = np.log(E / 1e3)  # E in MeV
+    E_th = 1.22  # Threshold energy (GeV)
+    return (34.3 + 1.88*L + 0.25*L**2) * (1 - (E_th / E)**4)**2
 
-def E_CR(RSN): #RSN in yr^-1
-    E_SN_erg = 1e51*u.erg #characteristic energy output
-    E_SN_GeV = (E_SN_erg.to(u.eV)).value*1e-9 # GeV
-    xi = 0.10 # efficiency ~10%
-    R_sn_yr = RSN*pow(u.yr,-1) #SN rate in yrs
-    R_sn_s = (R_sn_yr.to(pow(u.second,-1))).value
-    return R_sn_s*E_SN_GeV*xi #SN rate in GeV/seconds
+# Total CR energy injection rate from SN explosions (GeV/s)
+def E_CR(RSN):
+    E_SN_erg = 1e51 * u.erg                # Typical supernova energy
+    E_SN_GeV = (E_SN_erg.to(u.eV)).value * 1e-9  # Convert to GeV
+    xi = 0.10                               # Acceleration efficiency
+    R_sn_yr = RSN / u.yr                   # SN rate in 1/yr
+    R_sn_s = R_sn_yr.to(1 / u.s).value     # Convert rate to 1/s
+    return R_sn_s * E_SN_GeV * xi          # Total energy per second
 
+# Source spectrum integrand: includes momentum spectrum, energy, and exponential cutoff
+def I(p, alpha, p_max):
+    mp = 0.938  # Proton mass in GeV/c^2
+    return (4 * np.pi) * p**2 * (p / mp)**(-alpha) * (np.sqrt(p**2 + mp**2) - mp) * np.exp(-p / p_max)
 
-def I(p,alpha,p_max):
-    mp = 0.938
-    return (4*np.pi)*pow(p,2)*pow(p/mp,-alpha)*(np.sqrt(pow(p,2)+pow(0.938,2))-0.938)*np.exp(-p/p_max)
+# Differential CR injection rate Q(p)
+def Qp(p, R, h, plow, pup, alpha, pmax, RSN):
+    mp = 0.938  # Proton mass
+    R_cm = (R * u.pc).to(u.cm).value       # Radius in cm
+    h_cm = (h * u.pc).to(u.cm).value       # Height in cm
 
-def Qp(p,R,h,plow,pup,alpha,pmax,RSN):
-    mp = 0.938
-    R_pc = R*u.parsec  #pc to cm conversion
-    R_cm = (R_pc.to(u.cm)).value
-    h_pc = h*u.pc
-    h_cm = (h_pc.to(u.cm)).value
-    if h == 0: 
-        V_spherical = (4/3)*np.pi*pow(R_cm,3)
-        V_SBN = V_spherical
+    # Volume calculation
+    if h == 0:
+        V_SBN = (4 / 3) * np.pi * R_cm**3  # Spherical volume
     else:
-        V_disk = 2*h_cm*np.pi*pow(R_cm,2)
-        V_SBN = V_disk
-    mom = np.logspace(np.log10(plow),np.log10(pup),100000)
-    Int = np.trapz(I(mom,alpha,pmax),mom)
-    N = E_CR(RSN)/Int
-    return (N/V_SBN)*pow(p/mp,-alpha)*np.exp(-p/pmax)
+        V_SBN = 2 * np.pi * R_cm**2 * h_cm # Disk volume
 
+    # Momentum integration for normalization
+    mom = np.logspace(np.log10(plow), np.log10(pup), 100000)
+    Int = np.trapz(I(mom, alpha, pmax), mom)
+    N = E_CR(RSN) / Int                    # Normalization constant
 
-####
-## Timescale
-####
+    return (N / V_SBN) * (p / mp)**(-alpha) * np.exp(-p / pmax)
 
-def loss_time(p,nism): 
-    E = np.sqrt(pow(p,2)+pow(0.938,2))
-    eta = 0.5
-    n_cm = nism*pow(u.cm,-3)
-    n_m = (n_cm.to(pow(u.m,-3))).value
-    sigma = cross_section(E)*1e-31 #1e-31 converts mb -> m2
-    return 1/(eta*n_m*sigma*const.c.value)
+# ===============================
+#         TIMESCALES
+# ===============================
 
+# Energy loss time due to hadronic collisions (in seconds)
+def loss_time(p, nism):
+    E = np.sqrt(p**2 + 0.938**2)
+    eta = 0.5                              # Inelasticity
+    n_m = (nism * u.cm**-3).to(u.m**-3).value
+    sigma = cross_section(E) * 1e-31       # Convert mb to m²
+    return 1 / (eta * n_m * sigma * const.c.value)
 
-def tau_wind(R,v,h):
-    if h==0:
-        R_pc = R*u.parsec 
-        R_SBN = (R_pc.to(u.m)).value
-        v_wind = v*1000 
-        return (R_SBN/v_wind) 
+# Wind escape time (in seconds)
+def tau_wind(R, v, h):
+    v_wind = v * 1000                      # Convert km/s to m/s
+    if h == 0:
+        R_SBN = (R * u.pc).to(u.m).value
+        return R_SBN / v_wind
     else:
-        h_pc = h*u.parsec
-        h_m = (h_pc.to(u.m)).value
-        v_wind = v*1000 
-        return (h_m/v_wind) 
-            
+        h_m = (h * u.pc).to(u.m).value
+        return h_m / v_wind
 
-def larmor(p,B): #Larmor radius in m 
-    E = np.sqrt(pow(p,2)+pow(0.938,2))
-    B_G = (B*u.G)*1e-6 #Gauss
-    B_T = (B_G.to(u.T)).value #Tesla
-    return 3.3 *((E*1)/(1*B_T))
+# Larmor radius (in meters)
+def larmor(p, B):
+    E = np.sqrt(p**2 + 0.938**2)
+    B_T = (B * u.G * 1e-6).to(u.T).value   # Convert μG to Tesla
+    return 3.3 * (E / B_T)                 # Approximate formula
 
-def W_0_trapz(k_0,d): #integration via Trapezium method
-    integral = lambda k,d: pow(k,-d)
-    logaxis = np.logspace(np.log10(1),np.log10(1e10),100000)
-    I = np.trapz(integral(logaxis,d),logaxis)
-    return pow(pow(k_0,d)*I,-1)
+# Trapezoidal integration for turbulence normalization constant W₀
+def W_0_trapz(k_0, d):
+    integral = lambda k: k**(-d)
+    logaxis = np.logspace(0, 10, 100000)
+    I = np.trapz(integral(logaxis), logaxis)
+    return (k_0**d * I)**-1
 
+# Turbulence spectrum function F(k)
+def F(k, k_0, d):
+    return k * W_0_trapz(k_0, d) * (k / k_0)**(-d)
 
-def F(k,k_0,d):
-    return k*W_0_trapz(k_0,d)*pow(k/k_0,-d)
+# Diffusion coefficient in pc²/s
+def D(E, k_0, B, d):
+    c = const.c.value
+    k_m = 1 / (larmor(E, B) * u.m)                         # Convert to 1/m
+    k_pc = k_m.to(1 / u.pc).value                          # Convert to 1/pc
+    D_m2_s = (larmor(E, B) * c) / (3 * F(k_pc, k_0, d))    # m²/s
+    D_pc2_s = (D_m2_s * u.m**2 / u.s).to(u.pc**2 / u.s).value
+    return D_pc2_s
 
-def D(E,k_0,B,d):
-    c = (const.c).value # lightspeed in m/s
-    
-    k_m = 1/(larmor(E,B)*u.m) # in m^-1
-    
-    k_pc = (k_m.to(pow(u.parsec,-1))).value # in pc^-1
-    
-    D_m2_s = ((larmor(E,B)*c)/(3*F(k_pc,k_0,d)))*(pow(u.m,2)/u.s) #in m^2/s
-    
-    D_pc2_s = (D_m2_s.to(pow(u.pc,2)/u.s)).value
-    
-    return D_pc2_s # in pc^2/s
+# Diffusion time (quasi-linear theory, in seconds)
+def tau_diff_quasi(p, R):
+    return R**2 / D(p, 1, 250, 5 / 3)  # B = 250 μG
 
-def tau_diff_quasi(p,R):
-    #! B = 250 muG hardcoded
-    return pow(R,2)/D(p,1,250,5/3) # untit: seconds
+# Total CR lifetime including all loss processes
+def tau_lifetime(R, vwind, p, nism, h):
+    return 1 / (
+        1 / tau_wind(R, vwind, h) +
+        1 / loss_time(p, nism) +
+        1 / tau_diff_quasi(p, R)
+    )
 
-def tau_lifetime(R,vwind,p , nism,h):
-    return pow(pow(tau_wind(R,vwind,h),-1)+pow(loss_time(p,nism),-1) +pow(tau_diff_quasi(p,R),-1),-1)
+# ===============================
+#     MOMENTUM DISTRIBUTION
+# ===============================
 
+# Steady-state CR momentum distribution function f(p)
+def f_p(p, R, v, nism, h, plow, pup, alpha, pmax, RSN):
+    return tau_lifetime(R, v, p, nism, h) * Qp(p, R, h, plow, pup, alpha, pmax, RSN)
 
-####
-## Momentum distribution
-####
+# ===============================
+#     NEUTRINO DISTRIBUTION
+# ===============================
 
-def f_p(p,R,v,nism,h,plow,pup,alpha,pmax,RSN):
-    return tau_lifetime(R,v,p, nism,h)*Qp(p,R,h,plow,pup,alpha,pmax,RSN)
-
-
-
-####
-## Neutrino disribution functions
-####
-
-
-def Fmu1(x,Ep):
+# Muon neutrino distribution from pion decay (Kelner et al. 2006)
+def Fmu1(x, Ep):
     if x <= 0.427:
-        L= np.log(Ep/1e3)
-        y = x/0.427
-        B = 1.75+0.204*L+0.010*pow(L,2)
-        beta = pow(1.67+0.111*L+0.0038*pow(L,2),-1)
-        k = 1.07-0.086*L+0.002*pow(L,2)
-        first =  B*(np.log(y)/y)*pow((1-pow(y,beta))/(1+k*pow(y,beta)*(1-pow(y,beta))),4)
-        second = (1/np.log(y))-((4*beta*pow(y,beta))/(1-pow(y,beta)))-((4*k*beta*pow(y,beta)*(1-2*pow(y,beta)))/(1+k*pow(y,beta)*(1-pow(y,beta))))
-        return first*second
+        L = np.log(Ep / 1e3)
+        y = x / 0.427
+        B = 1.75 + 0.204*L + 0.010*L**2
+        beta = 1 / (1.67 + 0.111*L + 0.0038*L**2)
+        k = 1.07 - 0.086*L + 0.002*L**2
+        first = B * (np.log(y) / y) * ((1 - y**beta) / (1 + k * y**beta * (1 - y**beta)))**4
+        second = (1 / np.log(y)) - \
+                 (4 * beta * y**beta / (1 - y**beta)) - \
+                 (4 * k * beta * y**beta * (1 - 2 * y**beta) / (1 + k * y**beta * (1 - y**beta)))
+        return first * second
     else:
         return 0
+
 Fmu1_vec = np.vectorize(Fmu1)
 
+# Electron neutrino distribution
+def Fe(x, Ep):
+    L = np.log(Ep / 1e3)
+    Be = 1 / (69.5 + 2.65*L + 0.3*L**2)
+    betae = (0.201 + 0.062*L + 0.00042*L**2)**(-1/4)
+    ke = (0.279 + 0.141*L + 0.0172*L**2) / (0.3 + (2.3 + L)**2)
+    first = (1 + ke * np.log(x)**2)**3 / (x * (1 + 0.3 / x**betae))
+    second = (-np.log(x))**5
+    return Be * first * second
 
-
-def Fe(x,Ep):
-    L = np.log(Ep/1e3)
-    Be = pow(69.5+2.65*L+0.3*pow(L,2),-1)
-    betae= pow(0.201+0.062*L+0.00042*pow(L,2),-1/4)
-    ke = (0.279+0.141*L+0.0172*pow(L,2))/(0.3+pow(2.3+L,2))
-    first = (pow(1+ke*pow(np.log(x),2),3))/(x*(1+0.3/pow(x,betae)))
-    second = pow(-np.log(x),5)
-    return Be*first*second
 Fe = np.vectorize(Fe)
 
-
-def Ftot(x,Ep): 
-    return 2*Fe(x,Ep)+Fmu1(x,Ep)
+# Total neutrino spectrum (2e + 1μ)
+def Ftot(x, Ep): 
+    return 2 * Fe(x, Ep) + Fmu1(x, Ep)
 
 Ftot = np.vectorize(Ftot)
 
+# ===============================
+#         SOURCE FUNCTION q
+# ===============================
 
-####
-## q
-####
-
-def q(E_nu,R,v,nism,H,gammasn,pmax,RSN):
-    x = np.logspace(np.log10(0.0001),np.log10(1),1000)
-    c= 3e8*100 #cm/s
-    p = np.sqrt(pow(E_nu/x,2)-pow(0.938,2))
-    I = np.trapz(Ftot(x,E_nu/x)*cross_section(E_nu/x)*1e-27*(1/x)*4*np.pi*pow(p,2)*f_p(p,R,v,nism,H,0.1,1e9,gammasn,pmax,RSN),x)
-    return c*nism*I #GeV-1 cm-3 s-1
+# Neutrino source function q(Eν)
+def q(E_nu, R, v, nism, H, gammasn, pmax, RSN):
+    x = np.logspace(-4, 0, 1000)
+    c = 3e10  # Speed of light in cm/s
+    p = np.sqrt((E_nu / x)**2 - 0.938**2)
+    integrand = Ftot(x, E_nu / x) * cross_section(E_nu / x) * 1e-27 * (1 / x) * \
+                4 * np.pi * p**2 * f_p(p, R, v, nism, H, 0.1, 1e9, gammasn, pmax, RSN)
+    I = np.trapz(integrand, x)
+    return c * nism * I  # Units: GeV⁻¹ cm⁻³ s⁻¹
 
 q = np.vectorize(q)
 
+# ===============================
+#     OBSERVED NEUTRINO FLUX
+# ===============================
 
-
-####
-## Energ-squared scaled flux
-####
-
-
-def Flux(E_nu,R,v,nism,H,gammasn,pmax,RSN,D_L):#energy-squared scaled flux
-    DL_pc = (D_L*1e6)*u.parsec #pc
-    DL_cm = (DL_pc.to(u.cm)).value #cm
-    R_pc = R*u.pc #pc
-    R_cm = (R_pc.to(u.cm)).value#cm
-    H_pc = H*u.parsec#pc
-    H_cm = (H_pc.to(u.cm)).value#cm
+# Energy-squared scaled neutrino flux at Earth
+def Flux(E_nu, R, v, nism, H, gammasn, pmax, RSN, D_L):
+    DL_cm = (D_L * 1e6 * u.pc).to(u.cm).value
+    R_cm = (R * u.pc).to(u.cm).value
+    H_cm = (H * u.pc).to(u.cm).value
 
     if H == 0:
-        V = (4/3)*np.pi*pow(R_cm,3)
-        
-    if H != 0:
-        V = 2*H_cm*np.pi*pow(R_cm,2)
-    
-    scaled_flux = (1/3)*(V/(4*np.pi*pow(DL_cm,2)))*pow(E_nu,2)*q(E_nu,R,v,nism,H,gammasn,pmax,RSN)# factor 1/3 for oscillations
-    
+        V = (4 / 3) * np.pi * R_cm**3
+    else:
+        V = 2 * np.pi * R_cm**2 * H_cm
+
+    # Factor 1/3 accounts for neutrino oscillation into 3 flavors
+    scaled_flux = (1 / 3) * (V / (4 * np.pi * DL_cm**2)) * E_nu**2 * \
+                  q(E_nu, R, v, nism, H, gammasn, pmax, RSN)
     return scaled_flux
