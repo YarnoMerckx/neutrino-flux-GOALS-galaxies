@@ -1,8 +1,13 @@
 # ==== IMPORTS ====
+#General imports
 import matplotlib.pyplot as plt
 import numpy as np 
+
+#Astropy imports
 from astropy import units as u 
 from astropy import constants as const
+
+#Scipy imports
 from scipy.integrate import quad
 
 # ===============================
@@ -15,13 +20,13 @@ def cross_section(E):
     E_th = 1.22  # Threshold energy (GeV)
     return (34.3 + 1.88*L + 0.25*L**2) * (1 - (E_th / E)**4)**2
 
-# Total CR energy injection rate from SN explosions (GeV/s)
+# Total CR energy injection rate from SN explosions (GeV s-1)
 def E_CR(RSN):
     E_SN_erg = 1e51 * u.erg                # Typical supernova energy
     E_SN_GeV = (E_SN_erg.to(u.eV)).value * 1e-9  # Convert to GeV
     xi = 0.10                               # Acceleration efficiency
-    R_sn_yr = RSN / u.yr                   # SN rate in 1/yr
-    R_sn_s = R_sn_yr.to(1 / u.s).value     # Convert rate to 1/s
+    R_sn_yr = RSN / u.yr                   # SN rate in yr-1
+    R_sn_s = R_sn_yr.to(1 / u.s).value     # Convert rate to s-1
     return R_sn_s * E_SN_GeV * xi          # Total energy per second
 
 # Source spectrum integrand: includes momentum spectrum, energy, and exponential cutoff
@@ -62,7 +67,7 @@ def loss_time(p, nism):
 
 # Wind escape time (in seconds)
 def tau_wind(R, v, h):
-    v_wind = v * 1000                      # Convert km/s to m/s
+    v_wind = v * 1000                      # Convert km s-1 to m s-1
     if h == 0:
         R_SBN = (R * u.pc).to(u.m).value
         return R_SBN / v_wind
@@ -90,8 +95,8 @@ def F(k, k_0, d):
 # Diffusion coefficient in pc²/s
 def D(E, k_0, B, d):
     c = const.c.value
-    k_m = 1 / (larmor(E, B) * u.m)                         # Convert to 1/m
-    k_pc = k_m.to(1 / u.pc).value                          # Convert to 1/pc
+    k_m = 1 / (larmor(E, B) * u.m)                         # Convert to m-1
+    k_pc = k_m.to(1 / u.pc).value                          # Convert to m-1
     D_m2_s = (larmor(E, B) * c) / (3 * F(k_pc, k_0, d))    # m²/s
     D_pc2_s = (D_m2_s * u.m**2 / u.s).to(u.pc**2 / u.s).value
     return D_pc2_s
@@ -163,12 +168,12 @@ Ftot = np.vectorize(Ftot)
 # Neutrino source function q(Eν)
 def q(E_nu, R, v, nism, H, gammasn, pmax, RSN):
     x = np.logspace(-4, 0, 1000)
-    c = 3e10  # Speed of light in cm/s
+    c = 3e10  # Speed of light in cm s-1
     p = np.sqrt((E_nu / x)**2 - 0.938**2)
     integrand = Ftot(x, E_nu / x) * cross_section(E_nu / x) * 1e-27 * (1 / x) * \
                 4 * np.pi * p**2 * f_p(p, R, v, nism, H, 0.1, 1e9, gammasn, pmax, RSN)
     I = np.trapz(integrand, x)
-    return c * nism * I  # Units: GeV⁻¹ cm⁻³ s⁻¹
+    return c * nism * I  # Units: GeV-1 cm-3 s-2
 
 q = np.vectorize(q)
 
