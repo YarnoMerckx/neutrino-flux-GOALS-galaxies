@@ -1,0 +1,11 @@
+# Reference: Abbasi et al (2020), arXiv:2011.03545, figure VI.11
+# Data obtained using WebPlotDigitizer
+#
+# Energy [GeV]	Lower uncertainty val	Upper uncertainty val	E^2*flux [GeV cm^-2 s^-1 sr-1]	Lower uncertainty val	Upper uncertainty val
+6.09010e+4	4.18574e+4	  	8.83099e+4	  	2.12265e-8    	    	 	2.59769e-20	  	5.62755e-8
+1.28054e+5	8.83099e+4		1.85686e+5		6.35336e-8			4.93179e-8		7.97100e-8
+2.69255e+5	1.85686e+5		3.90435e+5		4.98274e-9			2.59769e-20	        1.52769e-8
+5.68069e+5	3.90435e+5		8.23733e+5		2.43640e-9			2.59769e-20		1.13825e-8
+1.19446e+6	8.23733e+5		1.73203e+6		1.77826e-8			8.83656e-9		3.00375e-8
+2.52005e+6	1.73203e+6		3.65421e+6		4.32943e-9			2.59769e-20		1.52363e-8
+5.29881e+6	3.65421e+6		7.68358e+6		1.29332e-9			1.29332e-9		1.29332e-9
