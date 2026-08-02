@@ -1,7 +1,38 @@
-# High-energy neutrino emission from GOALS galaxies
+# High-Energy Neutrino Emission from GOALS Galaxies
 
-The `GOALS_dataframe` folder contains a notebook that constructs a dataframe compiling electromagnetic data for each source in the Great Observatories All-Sky LIRG Survey ([GOALS](https://goals.ipac.caltech.edu/)), extracted from the `SplitIR` folder. It also includes starburst-driven neutrino fluxes calculated using `analytic_neutrino_flux.py`. Theoretical motivations and derivations for the analytic neutrino flux can be found in our work: PRD 108 (2023) 2, 023015 ([arXiv:2211.09972](https://arxiv.org/abs/2304.01020))).
- 
-The resulting dataframe is utilized in the notebooks `GOALS_flux_predictions.ipynb` and `GOALS_diffuse_predictions.ipynb` to generate per-source and diffuse neutrino flux predictions, respectively.
+This repository models and predicts high-energy neutrino fluxes from galaxies in the **Great Observatories All-Sky LIRG Survey ([GOALS](https://goals.ipac.caltech.edu/))**.
 
-Additionally, the notebook `NGC1068_flux_evidence.ipynb` compares fluxes obtained via the script `analytic_neutrino_flux.py` with the high-energy point-source flux observed by IceCube, as reported in `NGC1068_evidence_flux.txt` and obtained from Science 378 (2022) 6619, 538–543 ([arXiv:2211.09972](https://arxiv.org/abs/2211.09972)).
+---
+
+## 📌 Overview
+
+This project compiles electromagnetic data across the GOALS sample, evaluates starburst-driven neutrino fluxes using analytical models, and generates both individual point-source and diffuse flux predictions. Future updates will incorporate gamma-ray implementations.
+
+---
+
+## 📓 Notebook Workflow
+
+1. **`Generate_dataframe.ipynb`**
+   * Extracts electromagnetic data from the `data/split-lir/` directory for each GOALS source.
+   * Calculates starburst-driven neutrino fluxes using `helper_functions.analytic_neutrino_flux`.
+   * Outputs the compiled dataset used by subsequent prediction notebooks.
+
+2. **`GOALS_flux_predictions.ipynb`**
+   * Generates per-source neutrino flux predictions across the sample.
+
+3. **`GOALS_diffuse_predictions.ipynb`**
+   * Computes the total diffuse neutrino flux predictions.
+
+4. **`NGC1068_flux_evidence.ipynb`**
+   * Compares theoretical fluxes generated via `analytic_neutrino_flux.py` against IceCube's high-energy point-source observations for NGC 1068 specifically (`NGC1068_evidence_flux.txt`).
+
+---
+
+## 📚 References & Publications
+
+* **Theoretical Foundations & Analytic Flux Derivation:**
+  * *Phys. Rev. D* 108 (2023) 2, 023015 — [arXiv:2304.01020](https://arxiv.org/abs/2304.01020)
+* **IceCube NGC 1068 Observational Data:**
+  * *Science* 378 (2022) 6619, 538–543 — [arXiv:2211.09972](https://arxiv.org/abs/2211.09972)
+* **GOALS Survey Details:**
+  * [GOALS Project Website](https://goals.ipac.caltech.edu/)
