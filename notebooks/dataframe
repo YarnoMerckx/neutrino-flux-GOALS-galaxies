@@ -1,4 +1,4 @@
-,Name,RA,Dec,Redshift,D_L [Mpc],log(LIR),LIR_unc x 1e11,AGNbol,AGNbol_unc,SFR [M$_{\odot}$],un-corr SFR [M$_{\odot}$],Supernova rate [yr$^{-1}$] ,un-corr Supernova rate [yr$^{-1}$] ,Flux(TeV) [GeV cm$^{-2}$ s$^{-1}$],Flux(TeV) no AGN [GeV cm$^{-2}$ s$^{-1}$]
+,Name,RA,Dec,Redshift,D_L [Mpc],log(LIR),LIR_unc x 1e11,AGNbol,AGNbol_unc,SFR [M$_{\odot}$],un-corr SFR [M$_{\odot}$],Supernova rate [yr$^{-1}$],un-corr Supernova rate [yr$^{-1}$],Flux(TeV) [GeV cm$^{-2}$ s$^{-1}$],Flux(TeV) no AGN [GeV cm$^{-2}$ s$^{-1}$]
 0,NGC0023,00h09m53.32s,+25d55m26.2s,0.01523,65.2,11.11,0.05,0.09,0.04,22.3,24.5,0.13,0.15,3.48e-12,3.83e-12
 1,NGC0034a,00h11m06.59s,-12d06m25.5s,0.01962,84.1,11.5,0.08,0.04,0.02,57.74,60.15,0.35,0.36,5.42e-12,5.64e-12
 2,MCG-02-01-051a,00h18m50.87s,-10d22m36.6s,0.02722,117.5,11.67,0.09,0.07,0.05,82.41,88.61,0.5,0.53,3.98e-12,4.28e-12
