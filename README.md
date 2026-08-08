@@ -6,7 +6,7 @@ This repository models and predicts high-energy neutrino fluxes from galaxies in
 
 ## 📌 Overview
 
-This project compiles electromagnetic data across the GOALS sample, evaluates starburst-driven neutrino fluxes using analytical models, and generates both individual point-source and diffuse flux predictions. Future updates will incorporate gamma-ray implementations.
+This project compiles electromagnetic data across the GOALS sample, evaluates starburst-driven neutrino fluxes using analytical models, and generates both individual point-source and diffuse flux predictions. Future updates will introduce gamma‑ray modules and integration with cosmological hydrodynamical simulations.
 
 ---
 
