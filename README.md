@@ -1,4 +1,4 @@
-# High-Energy Neutrino Emission from GOALS Galaxies
+# Multimessenger Emission from GOALS Galaxies
 
 This repository models and predicts high-energy neutrino (and secondary gamma-ray) fluxes from galaxies in the **Great Observatories All-Sky LIRG Survey ([GOALS](https://goals.ipac.caltech.edu/))**.
 
